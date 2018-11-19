@@ -1,15 +1,12 @@
 package main
-
 import (
  "fmt"
  "gonum.org/v1/gonum/mat"
  "math"
  "math/rand"
- "time"
 )
-// var cpuprofile = flag.String("cpuprofile", "", "write cpu profile to `file`")
 
-func random_matrix (n int,m int)(*mat.Dense){
+func Random_matrix (n int,m int)(*mat.Dense){
 	s:=mat.NewDense(n,m,nil)
 	for i:=0;i<n;i++{
 		for j:=0;j<m;j++{
@@ -28,7 +25,7 @@ func make_identity(w int)(*mat.Dense){
 	return tity
 }
 
-func matPrint(X mat.Matrix) {
+func MatPrint(X mat.Matrix) {
  fa := mat.Formatted(X, mat.Prefix(""), mat.Squeeze())
  fmt.Printf("%v\n", fa)
 }
@@ -96,7 +93,7 @@ func is_diagonally_dominant(matrix mat.Matrix)(bool){
 	return true
 }
 
-func make_diagonally_dominant(matrix mat.Matrix,col mat.Matrix)(*mat.Dense,*mat.Dense,*mat.Dense){
+func Make_diagonally_dominant(matrix mat.Matrix,col mat.Matrix)(*mat.Dense,*mat.Dense,*mat.Dense){
 	A:=mat.DenseCopyOf(matrix)
 	b:=mat.DenseCopyOf(col)
 	w,_:=matrix.Dims()
@@ -139,7 +136,7 @@ func seidel_condition(x mat.Matrix,prev_x mat.Matrix,q float64,eps float64)(bool
 	return true
 }
 
-func solve_monte_carlo(matrix mat.Matrix,col mat.Matrix)(*mat.Dense){
+func Solve_monte_carlo(matrix mat.Matrix,col mat.Matrix)(*mat.Dense){
 	A:=mat.DenseCopyOf(matrix)
 	b:=mat.DenseCopyOf(col)
 	w,_:=A.Dims()
@@ -197,7 +194,7 @@ func solve_monte_carlo(matrix mat.Matrix,col mat.Matrix)(*mat.Dense){
 	
 }
 
-func solve_gauss(matrix mat.Matrix,col mat.Matrix) (*mat.Dense){
+func Solve_gauss(matrix mat.Matrix,col mat.Matrix) (*mat.Dense){
 	A:= mat.DenseCopyOf(matrix)
 	b:= mat.DenseCopyOf(col)
 	w,h:=A.Dims()
@@ -226,76 +223,23 @@ func solve_gauss(matrix mat.Matrix,col mat.Matrix) (*mat.Dense){
 	return b
 }
 
-func test_all(max_dim int ,epsilon float64){
-	total_monte:=0.0
-	total_gauss:=0.0
-	for i:=3;i<max_dim;i++{
-		matrix:=random_matrix(i,i)
-		column:=random_matrix(i,1)
-
-		start:=time.Now()
-		A,b,V:=make_diagonally_dominant(matrix,column)
-		if !is_diagonally_dominant(A){
-			fmt.Printf("Error! {%v}x{%v} matrix is not diagonally dominant\n",i, i)
-			continue
-		}
-		time_diagonal:=time.Since(start)
-		
-		start=time.Now()
-		res_monte:=mat.NewDense(i,1,nil)
-		res_monte.Product(V,solve_monte_carlo(A,b))
-		time_monte:=time.Since(start)
-		
-		start=time.Now()
-		res_gauss:=solve_gauss(matrix,column)
-		time_gauss:=time.Since(start)
-
-		for j:=0;j<i;j++{
-			if (math.Abs(res_gauss.At(j, 0)-res_monte.At(j, 0))>=epsilon){
-				fmt.Println("------------------------------------")
-				fmt.Printf("Test fails for random matrix(%vx%v)\n",i, i)
-				fmt.Println("Monte carlo result : ")
-				matPrint(res_monte)
-				fmt.Println("Gauss result : ")
-				matPrint(res_gauss)
-			  	return		
-			}
-		}
-		total_monte+=float64(time_monte)
-		total_gauss+=float64(time_gauss)
-		fmt.Printf("Passed for random matrix %vx%v. Time: Diagonalization - %v, Monte Carlo - %v, Gauss - %v\n",
-              i, i, time_diagonal, time_monte, time_gauss)
-	}
-
-}
-
 func test_hardcoded(){
 	matrix:= mat.NewDense (4,4 ,[] float64 {13, 12, 3, 16,0, 28, 17, 10,9, 1, 14, 3,10, 14, 3, 0})
 	column:= mat.NewDense (4,1,[] float64 {242, 279, 111, 143})
-	A,b,V := make_diagonally_dominant(matrix, column)
+	A,b,V := Make_diagonally_dominant(matrix, column)
 	solution := mat.NewDense(4, 1, nil)
-	solution.Product(V, solve_monte_carlo(A, b))
+	solution.Product(V, Solve_monte_carlo(A, b))
 	fmt.Println("Solving Ax = b:")
 	fmt.Println("A:")
-	matPrint(matrix)	
+	MatPrint(matrix)	
 	fmt.Println("b:")
-	matPrint(column)
+	MatPrint(column)
 	fmt.Println("solution")
-	matPrint(solution)
+	MatPrint(solution)
 }
-
 
 func main() {
-	// if *cpuprofile != "" {
-	//         f, err := os.Create(*cpuprofile)
-	//         if err != nil {
-	//             log.Fatal("could not create CPU profile: ", err)
-	//         }
-	//         if err := pprof.StartCPUProfile(f); err != nil {
-	//             log.Fatal("could not start CPU profile: ", err)
-	//         }
-	//         defer pprof.StopCPUProfile()
-	//     }
-
-	test_all(100, 1e-5)
+	
+	test_hardcoded()
 }
+
